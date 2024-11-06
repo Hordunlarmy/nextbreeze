@@ -59,7 +59,7 @@ const Navigation = () => {
         // Here we are going to listen for real-time events.
         if (echo) {
             echo.private(`chat.${user?.id}`).listen('MessageSent', event => {
-                if (event.receiver.id === user?.id)
+                if (event.receiver_id === user?.id)
                     console.log('Real-time event received: ', event)
 
                 handleEchoCallback()
@@ -67,7 +67,7 @@ const Navigation = () => {
         }
 
         axios
-            .post('/api/get-unread-messages', {
+            .get('/api/chats/unread', {
                 user_id: user?.id,
             })
             .then(res => {
@@ -97,13 +97,15 @@ const Navigation = () => {
                         <div className="hidden space-x-8 text-sm sm:-my-px sm:ml-10 sm:flex">
                             <NavLink
                                 href="/dashboard"
-                                active={usePathname() === '/dashboard'}>
+                                active={usePathname() === '/dashboard'}
+                            >
                                 Dashboard
                             </NavLink>
 
                             <NavLink
                                 href="/reports"
-                                active={usePathname() === '/reports'}>
+                                active={usePathname() === '/reports'}
+                            >
                                 Reports
                             </NavLink>
                         </div>
@@ -118,7 +120,8 @@ const Navigation = () => {
                                     shape="circle"
                                     size="lg"
                                     color="danger"
-                                    isInvisible={unreadMessages === 0}>
+                                    isInvisible={unreadMessages === 0}
+                                >
                                     <PopoverTrigger>
                                         <Button
                                             radius="full"
@@ -127,7 +130,8 @@ const Navigation = () => {
                                             color="primary"
                                             isIconOnly
                                             aria-label={`There are ${unreadMessages} unread messages.`}
-                                            onClick={fetchMessages}>
+                                            onClick={fetchMessages}
+                                        >
                                             <MessageIcon />
                                         </Button>
                                     </PopoverTrigger>
@@ -139,14 +143,15 @@ const Navigation = () => {
                                     {messages.map(msg => (
                                         <div
                                             key={msg.id}
-                                            className="flex max-w-96 gap-2 py-2">
+                                            className="flex max-w-96 gap-2 py-2"
+                                        >
                                             <Image
                                                 alt="Profile pic"
                                                 className="w-full object-cover"
                                                 height={24}
                                                 src={
                                                     `https://ui-avatars.com/api/?size=256&name=` +
-                                                    msg.from.name
+                                                    msg.sender
                                                 }
                                                 width={24}
                                                 radius="full"
@@ -156,7 +161,7 @@ const Navigation = () => {
                                                     {msg.message}
                                                 </span>
                                                 <span className="text-right text-[10px] text-gray-400">
-                                                    {msg.from.name}
+                                                    {msg.sender}
                                                 </span>
                                             </div>
                                         </div>
@@ -177,7 +182,9 @@ const Navigation = () => {
                                                 {user?.name}
                                             </div>
                                             <div className="text-sm">
-                                                {user?.role}
+                                                {user?.account_type === 1
+                                                    ? 'Citizen'
+                                                    : 'Representative'}{' '}
                                             </div>
                                         </div>
 
@@ -185,7 +192,8 @@ const Navigation = () => {
                                             <svg
                                                 className="h-4 w-4 fill-current"
                                                 xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 20 20">
+                                                viewBox="0 0 20 20"
+                                            >
                                                 <path
                                                     fillRule="evenodd"
                                                     d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
@@ -194,7 +202,8 @@ const Navigation = () => {
                                             </svg>
                                         </div>
                                     </button>
-                                }>
+                                }
+                            >
                                 {/* Authentication */}
                                 <DropdownButton onClick={logout}>
                                     Logout
@@ -206,12 +215,14 @@ const Navigation = () => {
                         <div className="-mr-2 flex items-center sm:hidden">
                             <button
                                 onClick={() => setOpen(open => !open)}
-                                className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none">
+                                className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
+                            >
                                 <svg
                                     className="h-6 w-6"
                                     stroke="currentColor"
                                     fill="none"
-                                    viewBox="0 0 24 24">
+                                    viewBox="0 0 24 24"
+                                >
                                     {open ? (
                                         <path
                                             className="inline-flex"
@@ -242,7 +253,8 @@ const Navigation = () => {
                     <div className="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink
                             href="/dashboard"
-                            active={usePathname() === '/dashboard'}>
+                            active={usePathname() === '/dashboard'}
+                        >
                             Dashboard
                         </ResponsiveNavLink>
                     </div>
@@ -256,7 +268,8 @@ const Navigation = () => {
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                     viewBox="0 0 24 24"
-                                    stroke="currentColor">
+                                    stroke="currentColor"
+                                >
                                     <path
                                         strokeLinecap="round"
                                         strokeLinejoin="round"

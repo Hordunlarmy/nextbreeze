@@ -9,116 +9,119 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
     const router = useRouter()
     const params = useParams()
 
+    // Ensure axios always has the token set
+    const initializeToken = () => {
+        const token = localStorage.getItem('access_token')
+        if (token) setBearerToken(token)
+    }
+
+    // Function to fetch user data
+    const fetchUser = async () => {
+        initializeToken()
+        const res = await axios.get('/api/auth/user')
+        return res.data
+    }
+
     const {
         data: user,
         error,
         mutate,
-    } = useSWR('/api/user', () =>
-        axios
-            .get('/api/user')
-            .then(res => res.data)
-            .catch(error => {
-                if (error.response.status !== 409) throw error
-
-                router.push('/verify-email')
-            }),
-    )
-
-    const csrf = () => axios.get('/sanctum/csrf-cookie')
+    } = useSWR(() => localStorage.getItem('access_token') ? '/api/auth/user' : null, fetchUser, {
+        onError: error => {
+            if (error.response && error.response.status === 401) {
+                router.push('/login')
+            }
+        },
+    })
 
     const register = async ({ setErrors, ...props }) => {
-        await csrf()
-
         setErrors([])
 
-        axios
-            .post('/register', props)
-            .then(() => mutate())
-            .catch(error => {
-                if (error.response.status !== 422) throw error
-
-                setErrors(error.response.data.errors)
-            })
+        try {
+            await axios.post('/api/auth/register', props)
+            mutate()
+        } catch (error) {
+            if (error.response.status !== 422) throw error
+            setErrors(error.response.data.errors)
+        }
     }
 
     const login = async ({ setErrors, setStatus, ...props }) => {
-        await csrf()
-
         setErrors([])
         setStatus(null)
 
-        axios
-            .post('/login', props)
-            .then(res => {
-                mutate()
-
-                setBearerToken(res.data.token)
-                console.log(res)
-            })
-            .catch(error => {
-                if (error.response.status !== 422) throw error
-
-                setErrors(error.response.data.errors)
-            })
+        try {
+            const res = await axios.post('/api/auth/login', props)
+            localStorage.setItem('access_token', res.data.access_token)
+            setBearerToken(res.data.access_token)
+            mutate()
+            router.push('/dashboard')
+        } catch (error) {
+            if (error.response.status !== 422) throw error
+            setErrors(error.response.data.errors)
+        }
     }
 
     const forgotPassword = async ({ setErrors, setStatus, email }) => {
-        await csrf()
-
         setErrors([])
         setStatus(null)
 
-        axios
-            .post('/forgot-password', { email })
-            .then(response => setStatus(response.data.status))
-            .catch(error => {
-                if (error.response.status !== 422) throw error
-
-                setErrors(error.response.data.errors)
+        try {
+            const response = await axios.post('/api/auth/forgot-password', {
+                email,
             })
+            setStatus(response.data.status)
+        } catch (error) {
+            if (error.response.status !== 422) throw error
+            setErrors(error.response.data.errors)
+        }
     }
 
     const resetPassword = async ({ setErrors, setStatus, ...props }) => {
-        await csrf()
-
         setErrors([])
         setStatus(null)
 
-        axios
-            .post('/reset-password', { token: params.token, ...props })
-            .then(response =>
-                router.push('/login?reset=' + btoa(response.data.status)),
-            )
-            .catch(error => {
-                if (error.response.status !== 422) throw error
-
-                setErrors(error.response.data.errors)
+        try {
+            const response = await axios.post('/api/auth/reset-password', {
+                token: params.token,
+                ...props,
             })
+            router.push('/login?reset=' + btoa(response.data.status))
+        } catch (error) {
+            if (error.response.status !== 422) throw error
+            setErrors(error.response.data.errors)
+        }
     }
 
-    const resendEmailVerification = ({ setStatus }) => {
-        axios
-            .post('/email/verification-notification')
-            .then(response => setStatus(response.data.status))
+    const resendEmailVerification = async ({ setStatus }) => {
+        const response = await axios.post(
+            '/api/auth/email/verification-notification'
+        )
+        setStatus(response.data.status)
     }
 
     const logout = async () => {
         if (!error) {
-            await axios.post('/logout').then(() => mutate())
+            await axios.post('/api/auth/logout')
+            localStorage.removeItem('access_token')
+            mutate()
         }
 
         window.location.pathname = '/login'
     }
 
     useEffect(() => {
-        // console.log('Hello')
-        if (middleware === 'guest' && redirectIfAuthenticated && user)
+        initializeToken()
+
+        if (middleware === 'guest' && redirectIfAuthenticated && user) {
             router.push(redirectIfAuthenticated)
+        }
         if (
             window.location.pathname === '/verify-email' &&
-            user?.email_verified_at
-        )
+            user?.email_verified
+        ) {
             router.push(redirectIfAuthenticated)
+        }
         if (middleware === 'auth' && error) logout()
     }, [user, error])
 
@@ -132,3 +135,4 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
         logout,
     }
 }
+

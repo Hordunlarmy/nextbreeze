@@ -27,9 +27,9 @@ const Dashboard = () => {
     const [team, setTeam] = useState([])
 
     useEffect(() => {
-        if (user?.role === 'Product Owner')
-            axios.post('/api/get-team-members').then(res => {
-                setTeam(res.data)
+        if (user?.account_type === 1)
+            axios.get('/api/accounts/representatives?sort_by=name&sort_order=asc&page=1&page_size=5').then(res => {
+                setTeam(res.data.data)
             })
     }, [user])
 
@@ -43,9 +43,8 @@ const Dashboard = () => {
         setIsSending(true)
 
         axios
-            .post('/api/send-message', {
-                user_id: receiver,
-                from: user?.id,
+            .post('/api/chats/send', {
+                receiver_id: receiver,
                 message: message,
             })
             .then(res => {
@@ -60,9 +59,9 @@ const Dashboard = () => {
         <>
             <Header
                 title={
-                    user?.role === 'Product Owner'
-                        ? `Fix the bugs! 🐞`
-                        : `It works on my machine! 😎`
+                    user?.account_type === 2
+                        ? `Representative machine! 🐞`
+                        : `Citizen machine! 😎`
                 }
             />
 
@@ -73,7 +72,8 @@ const Dashboard = () => {
                             {team.map(member => (
                                 <div
                                     key={member.id}
-                                    className={`relative flex rounded-lg border-2 border-gray-300 bg-white p-4 shadow-md shadow-gray-300/20 transition duration-700 ease-in-out`}>
+                                    className={`relative flex rounded-lg border-2 border-gray-300 bg-white p-4 shadow-md shadow-gray-300/20 transition duration-700 ease-in-out`}
+                                >
                                     <div className="flex w-full flex-col gap-5">
                                         <div className="flex h-full flex-col gap-4">
                                             <Image
@@ -93,7 +93,7 @@ const Dashboard = () => {
                                                     {member?.name}
                                                 </h3>
                                                 <h4 className="text-sm text-gray-500">
-                                                    {member?.role}
+                                                    {member?.account_type}
                                                 </h4>
                                             </div>
                                         </div>
@@ -122,7 +122,8 @@ const Dashboard = () => {
                                                 radius="md"
                                                 onClick={() =>
                                                     composeMessage(member)
-                                                }>
+                                                }
+                                            >
                                                 <ChatIcon />
                                                 Send message
                                             </Button>
@@ -146,7 +147,8 @@ const Dashboard = () => {
                     header: 'border-b-[1px] border-[#292f46]',
                     footer: 'border-t-[1px] border-[#292f46]',
                     closeButton: 'hover:bg-white/5 active:bg-white/10',
-                }}>
+                }}
+            >
                 <ModalContent>
                     {onClose => (
                         <>
@@ -168,13 +170,15 @@ const Dashboard = () => {
                                 <Button
                                     color="danger"
                                     variant="light"
-                                    onPress={onClose}>
+                                    onPress={onClose}
+                                >
                                     Cancel
                                 </Button>
                                 <Button
                                     color="primary"
                                     isLoading={isSending ? true : false}
-                                    onPress={() => sendMessage(receiver)}>
+                                    onPress={() => sendMessage(receiver)}
+                                >
                                     {isSending ? 'Sending...' : 'Send'}
                                 </Button>
                             </ModalFooter>
