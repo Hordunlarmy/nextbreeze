@@ -58,10 +58,10 @@ const Navigation = () => {
     useEffect(() => {
         // Here we are going to listen for real-time events.
         if (echo) {
-            echo.private(`chat.${user?.id}`).listen('MessageSent', event => {
-                if (event.receiver_id === user?.id)
-                    console.log('Real-time event received: ', event)
-
+            console.log('Echo instance: ', echo)
+            echo.private(`user.${user?.id}`).listen('Notification', event => {
+                if (event.account_id === user?.id)
+                    console.log('Real-time message received: ', event)
                 handleEchoCallback()
             })
         }
