@@ -18,27 +18,29 @@ const Login = () => {
         redirectIfAuthenticated: '/dashboard',
     })
 
-    const [email, setEmail] = useState('')
+    const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
-    const [shouldRemember, setShouldRemember] = useState(false)
-    const [errors, setErrors] = useState([])
+    const [errors, setErrors] = useState({})
     const [status, setStatus] = useState(null)
 
     useEffect(() => {
-        if (router.reset?.length > 0 && errors.length === 0) {
+        if (router.reset?.length > 0 && Object.keys(errors).length === 0) {
             setStatus(atob(router.reset))
         } else {
             setStatus(null)
         }
-    })
+    }, [router, errors])
 
     const submitForm = async event => {
         event.preventDefault()
 
+        // Create a new FormData object
+        const formData = new FormData()
+        formData.append('username', username)
+        formData.append('password', password)
+
         login({
-            email,
-            password,
-            remember: shouldRemember,
+            formData,
             setErrors,
             setStatus,
         })
@@ -48,68 +50,43 @@ const Login = () => {
         <>
             <AuthSessionStatus className="mb-4" status={status} />
             <form onSubmit={submitForm}>
-                {/* Email Address */}
+                {/* Username */}
                 <div>
-                    <Label htmlFor="email">Email</Label>
-
+                    <Label htmlFor="username">Username (Email)</Label>
                     <Input
-                        id="email"
+                        id="username"
                         type="email"
-                        value={email}
-                        className="block mt-1 w-full"
-                        onChange={event => setEmail(event.target.value)}
+                        value={username}
+                        className="mt-1 block w-full"
+                        onChange={event => setUsername(event.target.value)}
                         required
                         autoFocus
                     />
-
-                    <InputError messages={errors.email} className="mt-2" />
+                    <InputError messages={errors?.username} className="mt-2" />{' '}
+                    {/* Safe access */}
                 </div>
 
                 {/* Password */}
                 <div className="mt-4">
                     <Label htmlFor="password">Password</Label>
-
                     <Input
                         id="password"
                         type="password"
                         value={password}
-                        className="block mt-1 w-full"
+                        className="mt-1 block w-full"
                         onChange={event => setPassword(event.target.value)}
                         required
                         autoComplete="current-password"
                     />
-
-                    <InputError
-                        messages={errors.password}
-                        className="mt-2"
-                    />
+                    <InputError messages={errors?.password} className="mt-2" />{' '}
+                    {/* Safe access */}
                 </div>
 
-                {/* Remember Me */}
-                <div className="block mt-4">
-                    <label
-                        htmlFor="remember_me"
-                        className="inline-flex items-center">
-                        <input
-                            id="remember_me"
-                            type="checkbox"
-                            name="remember"
-                            className="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                            onChange={event =>
-                                setShouldRemember(event.target.checked)
-                            }
-                        />
-
-                        <span className="ml-2 text-sm text-gray-600">
-                            Remember me
-                        </span>
-                    </label>
-                </div>
-
-                <div className="flex items-center justify-end mt-4">
+                <div className="mt-4 flex items-center justify-end">
                     <Link
                         href="/forgot-password"
-                        className="underline text-sm text-gray-600 hover:text-gray-900">
+                        className="text-sm text-gray-600 underline hover:text-gray-900"
+                    >
                         Forgot your password?
                     </Link>
 

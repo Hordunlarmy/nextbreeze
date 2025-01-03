@@ -59,20 +59,20 @@ const Navigation = () => {
         // Here we are going to listen for real-time events.
         if (echo) {
             console.log('Echo instance: ', echo)
-            echo.private(`user.${user?.id}`).listen('Notification', event => {
-                if (event.account_id === user?.id)
+            echo.channel(`user.${user?.id}`).listen('Notification', event => {
+                if (event.user_id === user?.id)
                     console.log('Real-time message received: ', event)
                 handleEchoCallback()
             })
         }
 
         axios
-            .get('/api/chats/unread', {
+            .get('/api/v1/chats/unread', {
                 user_id: user?.id,
             })
             .then(res => {
                 setUnreadMessages(res.data.length)
-                setMessages(res.data)
+                setMessages(res.data.messages)
             })
     }, [user, unreadMessages, controls, echo])
 
@@ -179,12 +179,10 @@ const Navigation = () => {
                                     <button className="flex items-start text-sm font-medium text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none">
                                         <div className="flex flex-col items-start">
                                             <div className="text-black">
-                                                {user?.name}
+                                                {user?.full_name}
                                             </div>
                                             <div className="text-sm">
-                                                {user?.account_type === 1
-                                                    ? 'Citizen'
-                                                    : 'Representative'}{' '}
+                                                {'Trends User'}{' '}
                                             </div>
                                         </div>
 

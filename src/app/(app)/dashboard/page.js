@@ -27,14 +27,14 @@ const Dashboard = () => {
     const [team, setTeam] = useState([])
 
     useEffect(() => {
-        if (user?.account_type === 1)
-            axios.get('/api/accounts/representatives?sort_by=name&sort_order=asc&page=1&page_size=5').then(res => {
-                setTeam(res.data.data)
+        if (user?.email_verified === true)
+            axios.get('/api/v1/users').then(res => {
+                setTeam(res.data)
             })
     }, [user])
 
     const composeMessage = member => {
-        setMessageTo(member.name)
+        setMessageTo(member.full_name)
         setReceiver(member.id)
         onOpen()
     }
@@ -57,13 +57,7 @@ const Dashboard = () => {
 
     return (
         <>
-            <Header
-                title={
-                    user?.account_type === 2
-                        ? `Representative machine! 🐞`
-                        : `Citizen machine! 😎`
-                }
-            />
+            <Header title={`Trend Users! 🐞`} />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -82,7 +76,7 @@ const Dashboard = () => {
                                                 height={64}
                                                 src={
                                                     `https://ui-avatars.com/api/?size=256&name=` +
-                                                    member.name
+                                                    member.full_name
                                                 }
                                                 width={64}
                                                 radius="full"
@@ -90,10 +84,10 @@ const Dashboard = () => {
 
                                             <div className="flex h-full flex-col">
                                                 <h3 className="text-lg font-bold">
-                                                    {member?.name}
+                                                    {member?.full_name}
                                                 </h3>
                                                 <h4 className="text-sm text-gray-500">
-                                                    {member?.account_type}
+                                                    {member?.id}
                                                 </h4>
                                             </div>
                                         </div>

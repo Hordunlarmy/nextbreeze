@@ -4,23 +4,22 @@ import Echo from 'laravel-echo'
 import Pusher from 'pusher-js'
 window.Pusher = Pusher
 
+const jwtToken = localStorage.getItem('access_token')
 const echo = new Echo({
     broadcaster: 'reverb',
     key: process.env.NEXT_PUBLIC_REVERB_APP_KEY,
     authorizer: channel => {
         return {
             authorize: (socketId, callback) => {
-                axios
-                    .post('/api/broadcasting/auth', {
-                        socket_id: socketId,
-                        channel_name: channel.name,
-                    })
-                    .then(response => {
-                        callback(false, response.data)
-                    })
-                    .catch(error => {
-                        callback(true, error)
-                    })
+                const headers = {
+                    Authorization: `Bearer ${jwtToken}`,
+                }
+
+                callback(false, {
+                    socket_id: socketId,
+                    channel_name: channel.name,
+                    headers: headers,
+                })
             },
         }
     },
