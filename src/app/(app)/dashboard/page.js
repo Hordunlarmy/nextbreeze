@@ -15,6 +15,7 @@ import {
 } from '@nextui-org/react'
 import Header from '@/app/(app)/Header'
 import ChatIcon from '@/components/ChatIcon'
+import useEcho from '@/hooks/echo'
 
 const Dashboard = () => {
     const { user } = useAuth({ middleware: 'auth' })
@@ -25,18 +26,36 @@ const Dashboard = () => {
     const [message, setMessage] = useState('')
     const [isSending, setIsSending] = useState(false)
     const [team, setTeam] = useState([])
+    const [messages, setMessages] = useState([]) // Add state to store messages
+
+    const echo = useEcho()
 
     useEffect(() => {
-        if (user?.account_type === 1)
-            axios.get('/api/accounts/representatives?sort_by=name&sort_order=asc&page=1&page_size=5').then(res => {
-                setTeam(res.data.data)
-            })
+        if (user?.account_type === 2)
+            axios
+                .get(
+                    '/api/accounts/representatives?sort_order=asc&page=1&page_size=10',
+                )
+                .then(res => {
+                    setTeam(res.data.data)
+                })
     }, [user])
 
     const composeMessage = member => {
         setMessageTo(member.name)
         setReceiver(member.id)
+        subscribeToChannel(user.id, member.id)
         onOpen()
+    }
+
+    const subscribeToChannel = (senderId, receiverId) => {
+        if (echo) {
+            const chatId = [senderId, receiverId].sort().join('_')
+            echo.private(`chat.${chatId}`).listen('NewMessage', data => {
+                console.log('Message received:', data)
+                setMessages(prevMessages => [...prevMessages, data.message]) // Add new message to state
+            })
+        }
     }
 
     const sendMessage = receiver => {
@@ -48,10 +67,21 @@ const Dashboard = () => {
                 message: message,
             })
             .then(res => {
-                if (res.statusText === 'No Content') {
+                if (res.status === 200 || res.statusText === 'No Content') {
+                    // Reset state after a successful message send
                     setIsSending(false)
                     onClose()
+                    setMessage('') // Clear the message input
+                } else {
+                    // Handle unexpected response
+                    console.error('Unexpected response:', res)
+                    setIsSending(false)
                 }
+            })
+            .catch(error => {
+                // Log error and reset the loading state
+                console.error('Error sending message:', error)
+                setIsSending(false)
             })
     }
 
@@ -165,6 +195,19 @@ const Dashboard = () => {
                                         setMessage(event.target.value)
                                     }
                                 />
+                                {/* Display the sent message */}
+                                {messages.length > 0 && (
+                                    <div className="mt-4">
+                                        <h4 className="text-sm font-bold">
+                                            Sent Messages:
+                                        </h4>
+                                        <div className="text-gray-400">
+                                            {messages.map((msg, index) => (
+                                                <p key={index}>{msg}</p>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </ModalBody>
                             <ModalFooter>
                                 <Button

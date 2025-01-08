@@ -64,6 +64,7 @@ const Navigation = () => {
                     console.log('Real-time message received: ', event)
                 handleEchoCallback()
             })
+
         }
 
         axios
