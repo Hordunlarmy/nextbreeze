@@ -72,7 +72,7 @@ const Navigation = () => {
             })
             .then(res => {
                 setUnreadMessages(res.data.length)
-                setMessages(res.data.messages)
+                setMessages(res.data)
             })
     }, [user, unreadMessages, controls, echo])
 
