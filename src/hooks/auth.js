@@ -18,7 +18,7 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
     // Function to fetch user data
     const fetchUser = async () => {
         initializeToken()
-        const res = await axios.get('/api/v1/users/profile')
+        const res = await axios.get('/users/profile')
         return res.data
     }
 
@@ -29,7 +29,7 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
     } = useSWR(
         () =>
             localStorage.getItem('access_token')
-                ? '/api/v1/users/profile'
+                ? '/users/profile'
                 : null,
         fetchUser,
         {
@@ -45,7 +45,7 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
         setErrors([])
 
         try {
-            await axios.post('/api/v1/auth/register', props)
+            await axios.post('/auth/register', props)
             mutate()
         } catch (error) {
             if (error.response.status !== 422) throw error
@@ -58,7 +58,7 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
         setStatus(null)
 
         try {
-            const res = await axios.post('/api/v1/auth/signin', formData, {
+            const res = await axios.post('/auth/signin', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -77,7 +77,7 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
         setStatus(null)
 
         try {
-            const response = await axios.post('/api/v1/auth/forgot-password', {
+            const response = await axios.post('/auth/forgot-password', {
                 email,
             })
             setStatus(response.data.status)
@@ -92,7 +92,7 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
         setStatus(null)
 
         try {
-            const response = await axios.post('/api/v1/auth/reset-password', {
+            const response = await axios.post('/auth/reset-password', {
                 token: params.token,
                 ...props,
             })
@@ -105,7 +105,7 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
 
     const resendEmailVerification = async ({ setStatus }) => {
         const response = await axios.post(
-            '/api/v1/auth/email/verification-notification',
+            '/auth/email/verification-notification',
         )
         setStatus(response.data.status)
     }
@@ -113,7 +113,7 @@ export const useAuth = ({ middleware, redirectIfAuthenticated } = {}) => {
     const logout = async () => {
         if (!error) {
             localStorage.removeItem('access_token')
-            await axios.post('/api/v1/auth/logout')
+            await axios.post('/auth/logout')
             mutate()
         }
 

@@ -1,5 +1,5 @@
 'use client'
-
+import crypto from 'crypto'
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/auth'
 import { axios } from '@/lib/axios'
@@ -32,7 +32,7 @@ const Dashboard = () => {
 
     useEffect(() => {
         if (user?.email_verified === true)
-            axios.get('/api/v1/users').then(res => {
+            axios.get('/users').then(res => {
                 setTeam(res.data)
             })
     }, [user])
@@ -46,7 +46,10 @@ const Dashboard = () => {
 
     const subscribeToChannel = (senderId, receiverId) => {
         if (echo) {
-            const chatId = [senderId, receiverId].sort().join('_')
+            const ids = JSON.stringify([senderId, receiverId].sort())
+            const chatId = btoa(ids) // Encode the JSON string to base64
+
+            console.log('Subscribing to chat:', chatId)
             echo.private(`chat.${chatId}`).listen('NewMessage', data => {
                 console.log('Message received:', data)
                 setMessages(prevMessages => [...prevMessages, data.message]) // Add new message to state
@@ -58,7 +61,7 @@ const Dashboard = () => {
         setIsSending(true)
 
         axios
-            .post('/api/chats/send', {
+            .post('/chats/send', {
                 receiver_id: receiver,
                 message: message,
             })

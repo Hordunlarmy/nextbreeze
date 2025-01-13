@@ -59,7 +59,7 @@ const Navigation = () => {
         // Here we are going to listen for real-time events.
         if (echo) {
             console.log('Echo instance: ', echo)
-            echo.channel(`user.${user?.id}`).listen('Notification', event => {
+            echo.private(`user.${user?.id}`).listen('Notification', event => {
                 if (event.user_id === user?.id)
                     console.log('Real-time message received: ', event)
                 handleEchoCallback()
@@ -67,7 +67,7 @@ const Navigation = () => {
         }
 
         axios
-            .get('/api/v1/chats/unread', {
+            .get('/chats/unread', {
                 user_id: user?.id,
             })
             .then(res => {
