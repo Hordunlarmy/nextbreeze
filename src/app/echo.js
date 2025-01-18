@@ -16,11 +16,9 @@ const echo = new Echo({
                         channel_name: channel.name,
                     })
                     .then(response => {
-                        console.log('Broadcasting Auth Response Data:', response.data)
                         callback(false, response.data)
                     })
                     .catch(error => {
-                        console.error('Broadcasting Auth Error:', error.response ? error.response.data : error.message)
                         callback(true, error)
                     })
             },

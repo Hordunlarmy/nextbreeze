@@ -151,7 +151,7 @@ const Navigation = () => {
                                                 height={24}
                                                 src={
                                                     `https://ui-avatars.com/api/?size=256&name=` +
-                                                    msg.sender
+                                                    msg.sender_name
                                                 }
                                                 width={24}
                                                 radius="full"
@@ -161,7 +161,7 @@ const Navigation = () => {
                                                     {msg.message}
                                                 </span>
                                                 <span className="text-right text-[10px] text-gray-400">
-                                                    {msg.sender}
+                                                    {msg.sender_name}
                                                 </span>
                                             </div>
                                         </div>
