@@ -48,7 +48,9 @@ const Dashboard = () => {
             const ids = JSON.stringify([senderId, receiverId].sort())
             const chatId = btoa(ids) // Encode the JSON string to base64
 
+            console.log('Here is the echoInstance: ', echo)
             console.log('Subscribing to chat:', chatId)
+
             echo.private(`chat.${chatId}`).listen('NewMessage', data => {
                 console.log('Message received:', data)
                 setMessages(prevMessages => [...prevMessages, data.message]) // Add new message to state
